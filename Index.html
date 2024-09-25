@@ -1,0 +1,29 @@
+from flask import Flask, request, jsonify
+from emotion_detector import emotion_detector
+
+app = Flask(__name__)
+
+@app.route('/detect_emotion', methods=['POST'])
+def detect_emotion():
+    data = request.get_json()
+    text = data.get('text', '')
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
+    emotion = emotion_detector(text)
+    return jsonify({"emotion": emotion}), 200
+
+# 테스트용 코드
+def run_tests():
+    with app.test_client() as client:
+        # 감정 분석 테스트
+        response = client.post('/detect_emotion', json={"text": "I am so happy today!"})
+        print(response.get_json())  # 출력: {"emotion": "happy"}
+
+        response = client.post('/detect_emotion', json={"text": "I feel so sad."})
+        print(response.get_json())  # 출력: {"emotion": "sad"}
+
+        response = client.post('/detect_emotion', json={"text": ""})
+        print(response.get_json())  # 출력: {"error": "No text provided"}
+
+if __name__ == '__main__':
+    run_tests()
